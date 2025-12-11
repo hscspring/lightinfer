@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lightinfer"
+version = "0.1.0"
+description = "A lightweight bridge to serve synchronous model inference via async FastAPI."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  { name = "Your Name", email = "your.email@example.com" },
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Framework :: FastAPI",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "fastapi>=0.68.0",
+  "uvicorn>=0.15.0",
+  "pydantic>=1.8.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/hscspring/lightinfer"
+"Bug Tracker" = "https://github.com/hscspring/lightinfer/issues"
+
+[project.scripts]
+lightinfer = "lightinfer.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["lightinfer"]
