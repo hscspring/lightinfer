@@ -66,6 +66,9 @@ print(resp.json())
 
 **Streaming Request:**
 
+- Text: yield body, donnot dumps or encode
+- Audio: yield binary directly
+
 If your model returns a generator, you can use streaming:
 
 ```python
