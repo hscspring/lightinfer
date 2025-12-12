@@ -7,6 +7,7 @@ into an asynchronous FastAPI service with thread-safe communication.
 
 import asyncio
 import inspect
+import json
 import logging
 import queue
 import threading
@@ -31,6 +32,8 @@ class InferRequest(BaseModel):
     args: List[Any] = []
     kwargs: Dict[str, Any] = {}
     stream: bool = False
+    media_type: str = "text/event-stream"
+    chunk_size: Optional[int] = None
 
 
 class AsyncResponseBridge:
@@ -48,7 +51,7 @@ class AsyncResponseBridge:
         """Put an item into the queue from a synchronous thread.
 
         Args:
-           item: The item to put into the queue.
+            item: The item to put into the queue.
         """
         self._loop.call_soon_threadsafe(self._queue.put_nowait, item)
 
@@ -93,6 +96,8 @@ class LightServer:
         async def infer(request: InferRequest):
             """Handle inference requests."""
             stream = request.stream
+            media_type = request.media_type
+            chunk_size = request.chunk_size
             # use bridge for efficient async waiting
             response_channel = AsyncResponseBridge()
 
@@ -102,8 +107,8 @@ class LightServer:
 
             if stream:
                 return StreamingResponse(
-                    self._stream_generator(response_channel),
-                    media_type="text/event-stream",
+                    self._stream_generator(response_channel, media_type, chunk_size),
+                    media_type=media_type,
                 )
             else:
                 try:
@@ -123,29 +128,48 @@ class LightServer:
             """Health check endpoint."""
             return {"status": "ok", "queue_size": self._queue.qsize()}
 
-    async def _stream_generator(self, channel: AsyncResponseBridge):
+    async def _stream_generator(
+        self,
+        channel: AsyncResponseBridge,
+        media_type: str,
+        chunk_size: Optional[int] = None,
+    ):
         """Generate streaming response from the bridge channel.
 
         Args:
             channel: The bridge channel to read from.
+            media_type: The media type of the response.
+            chunk_size: The size of data chunks to yield (for binary data).
 
         Yields:
-            Server-Sent Event (SSE) formatted strings.
+            Server-Sent Event (SSE) formatted strings or raw data.
         """
+        buffer = b""
         while True:
             item = await channel.get()
 
             if item is None:  # End of stream sentinel
+                if buffer:
+                    yield buffer
                 break
 
             if isinstance(item, Exception):
                 logger.error(f"Stream error: {item}")
-                yield f"data: Error: {str(item)}\n\n"
+                if media_type == "text/event-stream":
+                    yield f"data: Error: {str(item)}\n\n"
                 break
 
-            # JSON encode the result for transport
-            import json
-            yield f"data: {json.dumps(item)}\n\n"
+            if media_type == "text/event-stream":
+                # JSON encode the result for transport
+                yield f"data: {json.dumps(item)}\n\n"
+            else:
+                if chunk_size and isinstance(item, bytes):
+                    buffer += item
+                    while len(buffer) >= chunk_size:
+                        yield buffer[:chunk_size]
+                        buffer = buffer[chunk_size:]
+                else:
+                    yield item
 
     def _worker_loop(self, worker_id: int, model: Any) -> None:
         """Main loop for worker threads.
@@ -165,9 +189,9 @@ class LightServer:
                 try:
                     if is_async_model:
                         # Run async model in a new event loop (synchronously for this thread)
-                        res = asyncio.run(infer_func(args, kwargs))
+                        res = asyncio.run(infer_func(*args, **kwargs))
                     else:
-                        res = infer_func(args, kwargs)
+                        res = infer_func(*args, **kwargs)
 
                     if stream:
                         # Handle generator output
