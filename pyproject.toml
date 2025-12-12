@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-  { name = "Your Name", email = "your.email@example.com" },
+  { name = "Yam", email = "haoshaochun@gmail.com" },
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -23,6 +23,15 @@ dependencies = [
   "fastapi>=0.68.0",
   "uvicorn>=0.15.0",
   "pydantic>=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "httpx",
+  "requests",
+  "twine",
+  "build",
 ]
 
 [project.urls]
