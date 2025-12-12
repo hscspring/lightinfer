@@ -8,7 +8,9 @@ It solves the "Blocking Loop" problem by efficiently isolating heavy computation
 
 - **Zero-Blocking Architecture**: Async Web Frontend + Sync Worker Threads.
 - **Efficient Bridge**: Uses `AsyncResponseBridge` for zero-thread-overhead waiting.
-- **Streaming Support**: Native Server-Sent Events (SSE) support for streaming inference.
+- **Streaming Support**: 
+  - Native Server-Sent Events (SSE) for text streaming.
+  - **Binary Streaming** for audio/video generation (with chunk buffering).
 - **Easy Integration**: Wrap any Python class with an `infer` method.
 - **Context Isolation**: Each worker runs in its own thread, ensuring safety for libraries like PyTorch.
 
@@ -22,16 +24,15 @@ pip install lightinfer
 
 ### 1. Define your Model
 
-LightInfer expects a model class with an `infer` method.
+LightInfer wraps any class with an `infer` method. The arguments to `infer` are automatically mapped from the JSON request.
 
 ```python
 import time
 
 class MyModel:
-    def infer(self, args, kwargs):
+    def infer(self, prompt: str = "world"):
         # Simulate heavy work
         time.sleep(1)
-        prompt = args[0] if args else "world"
         return {"message": f"Hello, {prompt}!"}
 ```
 
@@ -40,10 +41,10 @@ class MyModel:
 ```python
 from lightinfer.server import LightServer
 
-# Create your model instance(s)
+# Create your model instance
 model = MyModel()
 
-# Start server (you can pass a list of models to start multiple workers)
+# Start server (you can pass a list of models to run multiple worker threads)
 server = LightServer([model])
 server.start(port=8000)
 ```
@@ -55,6 +56,8 @@ server.start(port=8000)
 ```python
 import requests
 
+# 'args' in JSON maps to positional arguments of infer()
+# 'kwargs' in JSON maps to keyword arguments of infer()
 resp = requests.post("http://localhost:8000/api/v1/infer", 
                      json={"args": ["LightInfer"]})
 print(resp.json())
@@ -67,37 +70,41 @@ If your model returns a generator, you can use streaming:
 
 ```python
 class StreamingModel:
-    def infer(self, args, kwargs):
+    def infer(self, prompt: str):
         yield "Part 1"
         time.sleep(0.5)
         yield "Part 2"
-
-server = LightServer([StreamingModel()])
-server.start(port=8001)
 ```
 
 Client side:
 
 ```python
-resp = requests.post("http://localhost:8001/api/v1/infer", 
-                     json={"stream": True}, stream=True)
+resp = requests.post("http://localhost:8000/api/v1/infer", 
+                     json={"args": ["test"], "stream": True}, stream=True)
 
 for line in resp.iter_lines():
     if line:
         print(line.decode('utf-8'))
 ```
 
-### 4. CLI Usage (Recommended)
+## Examples
 
-You can also run LightInfer directly from the command line without writing a server script.
+Check the `examples/` directory for ready-to-run scenarios:
 
-**Format**: `lightinfer <module>:<Class> [options]`
+- [**Simple LLM**](examples/simple_llm.py): Text-to-Text generation with SSE streaming.
+- [**Streaming TTS**](examples/streaming_tts.py): Text-to-Audio generation with binary chunk streaming.
+
+## CLI Usage
+
+You can serve any model class directly from the terminal.
+
+**Format**: `lightinfer <module>:<Class>`
 
 Given a file `my_model.py`:
 ```python
 class MyModel:
-    def infer(self, args, kwargs):
-        return {"ans": "42"}
+    def infer(self, prompt: str):
+        return f"Echo: {prompt}"
 ```
 
 Run:
