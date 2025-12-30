@@ -1,21 +1,22 @@
 <div align="center">
+
   <img src="docs/images/lightinfer_banner.jpg" alt="LightInfer Architecture" width="100%">
 
   <br />
 
   <h1>⚡ LightInfer</h1>
 
-  <p><strong>The Missing Bridge: Serve synchronous AI models (PyTorch, TensorFlow) via high-performance asynchronous FastAPI.</strong></p>
+  <p><strong>The Missing Bridge: Serve synchronous AI models via high-performance asynchronous FastAPI.</strong></p>
 
-  <p>
+  <p align="center">
     <a href="https://pypi.org/project/lightinfer"><img src="https://img.shields.io/pypi/v/lightinfer?color=blue&style=flat-square" alt="PyPI"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License"></a>
-    <img src="https://img.shields.io/badge/Python-3.8%2B-green?style=flat-square" alt="Python Version">
   </p>
 
   <p>
     <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a>
   </p>
+
 </div>
 
 ---
