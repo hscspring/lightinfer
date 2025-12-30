@@ -64,9 +64,7 @@ It takes just 3 steps to serve your model.
 
 LightInfer wraps any class with an `infer` method. The arguments are automatically mapped from incoming JSON requests.
 
-Python
-
-```
+```Python
 # my_model.py
 import time
 
@@ -82,9 +80,7 @@ class MyModel:
 
 Use the provided `LightServer` to spin up the API.
 
-Python
-
-```
+```Python
 # server.py
 from lightinfer.server import LightServer
 from my_model import MyModel
@@ -100,9 +96,7 @@ server.start(port=8000)
 
 Run it:
 
-Bash
-
-```
+```Bash
 python server.py
 ```
 
@@ -110,9 +104,7 @@ python server.py
 
 #### Standard Request (REST API)
 
-Python
-
-```
+```Python
 import requests
 
 # 'args' maps to positional arguments of infer()
@@ -130,9 +122,7 @@ If your model uses `yield`, LightInfer automatically handles it as a stream.
 
 **Model Side:**
 
-Python
-
-```
+```Python
 import time
 
 class StreamingModel:
@@ -148,9 +138,7 @@ class StreamingModel:
 
 **Client Side:** Adding `"stream": True` to your request payload tells the server to keep the connection open.
 
-Python
-
-```
+```Python
 import requests
 
 payload = {"args": ["test_stream"], "stream": True}
@@ -173,9 +161,7 @@ Serve any model class directly from your terminal without writing server code.
 
 **Format:** `lightinfer <module_name>:<ClassName>`
 
-Bash
-
-```
+```Bash
 # Given my_model.py exists
 lightinfer my_model:MyModel --port 8000 --workers 4
 ```
