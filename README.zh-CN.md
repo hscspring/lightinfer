@@ -1,4 +1,20 @@
-# LightInfer：同步模型推理 × 异步 Web 服务的高性能桥接器
+<div align="center">
+  <img src="docs/images/lightinfer_banner.jpg" alt="LightInfer 架构图" width="100%">
+  <br />
+  <h1>⚡ LightInfer</h1>
+  <p><strong>同步模型推理 × 异步 Web 服务的高性能桥接器</strong></p>
+
+  <p>
+    <a href="https://pypi.org/project/lightinfer"><img src="https://img.shields.io/pypi/v/lightinfer?color=blue&style=flat-square" alt="PyPI"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/许可证-MIT-yellow.svg?style=flat-square" alt="License"></a>
+    <img src="https://img.shields.io/badge/Python-3.8%2B-green?style=flat-square" alt="Python 版本">
+  </p>
+
+  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a>
+</div>
+
+---
+
 
 **LightInfer** 是一个**轻量、高性能**的模型服务框架，用于将 **同步推理代码**（如 PyTorch / TensorFlow / 任意 Python 推理逻辑）**安全、高效地暴露为异步 FastAPI 服务**。
 
